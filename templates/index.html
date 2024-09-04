@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANPR</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0e1117;
+            color: #fafafa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, h2 {
+            color: white;
+        }
+        .video-container {
+            width: 100%;
+            max-width: 640px;
+            margin-bottom: 20px;
+        }
+        .video-container iframe {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border: none;
+        }
+        .table-container {
+            width: 100%;
+            max-width: 800px;
+        }
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e2530;
+        }
+        th, td {
+            border: 1px solid #2e3a46;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #262730;
+            color: #ff4b4b;
+        }
+        .download-btn {
+            padding: 10px 20px;
+            background-color: #ff4b4b;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .download-btn:hover {
+            background-color: #ff6b6b;
+        }
+        .download-text {
+            margin-left: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .download-text {
+                display: none;
+            }
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .download-btn {
+                margin-top: 10px;
+            }
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Automatic Number Plate Recogization </h1>
+    <div class="video-container">
+        <iframe src="{{ url_for('video') }}" frameborder="0"></iframe>
+    </div>
+    <div class="table-container">
+        <div class="table-header">
+            <h2>Detected results</h2>
+            <button class="download-btn" onclick="downloadCSV()">
+                <i class="fas fa-download"></i>
+                <span class="download-text">Download CSV</span>
+            </button>
+        </div>
+        <table id="plateTable">
+            <thead>
+                <tr>
+                    <th>Number Plate</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Plate data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function updatePlateTable() {
+            $.getJSON('/get_plates', function(data) {
+                var tableBody = $('#plateTable tbody');
+                tableBody.empty();
+                data.forEach(function(plate) {
+                    var [date, time] = plate[1].split(' ');
+                    tableBody.append('<tr><td>' + plate[0] + '</td><td>' + date + '</td><td>' + time + '</td></tr>');
+                });
+            });
+        }
+
+        function downloadCSV() {
+            window.location.href = '/download_csv';
+        }
+
+        // Update the table every 5 seconds
+        setInterval(updatePlateTable, 5000);
+
+        // Initial update
+        updatePlateTable();
+    </script>
+</body>
+</html>
